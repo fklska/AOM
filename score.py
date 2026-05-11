@@ -89,6 +89,3 @@ class ScoringEngine:
 
         return result
 
-
-result = ScoringEngine().score()
-print(result)
