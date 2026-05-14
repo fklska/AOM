@@ -6,7 +6,7 @@ from catboost import CatBoostClassifier
 from sklearn.metrics import roc_auc_score
 
 CATBOOST_PARAMS = {
-    "iterations": 300,
+    "iterations": 100,
     "learning_rate": 0.05,
     "depth": 6,
     "l2_leaf_reg": 3,
@@ -57,10 +57,25 @@ class ScoringEngine:
         hidden_labels = test_df[self.target_column]
 
         fit_params = {"cat_features": cat_features} if cat_features else {}
-
-        model = CatBoostClassifier(**CATBOOST_PARAMS)
-        model.fit(X_train, y_train, **fit_params)
-
+        try:
+            model = CatBoostClassifier(**CATBOOST_PARAMS)
+            model.fit(X_train, y_train, **fit_params)
+        except Exception as e:
+            print("Ошибка c данными")
+            result = ScoringResult(
+                roc_auc=0,
+                gini=0,
+                primary_score=0,
+                details={
+                    "n_features": 0,
+                    "train_rows": 0,
+                    "test_rows": 0,
+                    "top_features": 0,
+                },
+            )
+            return result
+        
+        
         test_probas = model.predict_proba(X_test)[:, 1]
 
         roc_auc = roc_auc_score(hidden_labels, test_probas)
@@ -89,3 +104,7 @@ class ScoringEngine:
 
         return result
 
+if __name__ == "__main__":
+    score = ScoringEngine()
+    res = score.score()
+    print(res)

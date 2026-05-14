@@ -6,13 +6,22 @@ import re
 from score import ScoringEngine
 
 load_dotenv()
+score = ScoringEngine()
+
 
 client = ChatOpenAI(
     model="moonshotai/kimi-k2.6",
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("API_KEY"),
     reasoning_effort="minimal",
-    extra_body={"reasoning": {"enabled": True}}
+    extra_body={
+        "reasoning": {"enabled": False},
+        "provider": {
+            "order": ["fireworks"],
+            "allow_fallbacks": False
+        },
+    },
+    temperature=0.3,
 )
 
 DATA = ""
@@ -29,9 +38,10 @@ def build_prompt(role: str, instruct: str, constraints: str):
 
 def execute(prompt: ChatPromptTemplate):
     chain = prompt | client
+    print("=====Вызов агента=====")
     answer = chain.invoke({})
     code_match = re.search(r'```python(.*?)```', answer.content, re.DOTALL)
-
+    print("=====Исполнение кода=====")
     if code_match:
         clean_code = code_match.group(1).strip()
     else:
@@ -45,9 +55,13 @@ def execute(prompt: ChatPromptTemplate):
 
 
     if os.path.exists("output/test.csv") & os.path.exists("output/train.csv"):
-        res = ScoringEngine.score()
-
+        res = score.score()
         return res.roc_auc
 
     print("Код не рабочий")
     return 0
+
+
+if __name__ == "__main__":
+    answ = client.invoke("Привет, как дела?")
+    print(answ)
