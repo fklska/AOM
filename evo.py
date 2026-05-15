@@ -5,6 +5,9 @@ from deap import base, creator, tools, algorithms
 import json
 from agent import build_prompt, execute
 
+import warnings
+warnings.filterwarnings("ignore")
+
 prompts = pd.read_csv("prompts.csv", sep=";")
 roles = prompts.role.to_list()
 instructs = prompts.instruct.to_list()
@@ -51,10 +54,23 @@ toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutUniformInt, low=0, up=9, indpb=0.2)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
+def create_diverse_population():
+    indices = list(range(10))
+    shuffled_roles = random.sample(indices, 10)
+    shuffled_instr = random.sample(indices, 10)
+    shuffled_constr = random.sample(indices, 10)
+
+    pop = []
+    for r, i, c in zip(shuffled_roles, shuffled_instr, shuffled_constr):
+        ind = creator.Individual([r, i, c])
+        pop.append(ind)
+    return pop
+
 
 def main():
     random.seed(42)
-    pop = toolbox.population(n=10)
+    pop = create_diverse_population()
+    print(pop)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values[0])
     stats.register("avg", np.mean)

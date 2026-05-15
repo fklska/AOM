@@ -21,7 +21,7 @@ client = ChatOpenAI(
             "allow_fallbacks": False
         },
     },
-    temperature=0.3,
+    temperature=1.1,
 )
 
 DATA = ""
@@ -51,13 +51,14 @@ def execute(prompt: ChatPromptTemplate):
         namespace = {"__name__": "__main__"}
         exec(clean_code, namespace)
     except Exception as e:
-        print("Ошибка", e)
+        print("Ошибка исполнения, код не рабочий", e)
+        return 0
 
-
-    if os.path.exists("output/test.csv") & os.path.exists("output/train.csv"):
+    try:
         res = score.score()
         return res.roc_auc
-
+    except Exception as e:
+        print("Ошибка датасета", e)
     print("Код не рабочий")
     return 0
 
