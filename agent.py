@@ -56,6 +56,10 @@ def execute(prompt: ChatPromptTemplate):
 
     try:
         res = score.score()
+        if os.path.exists("output/test.csv") & os.path.exists("output/train.csv"):
+            os.remove("output/test.csv")
+            os.remove("output/train.csv")
+
         return res.roc_auc
     except Exception as e:
         print("Ошибка датасета", e)

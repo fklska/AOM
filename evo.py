@@ -89,3 +89,4 @@ if __name__ == "__main__":
     print("\nЛучшая особь (индексы):", best)
     print("Лучший ROC-AUC:", best.fitness.values[0])
     print("Лучший промпт:\n", best_prompt)
+    print(logbook)
