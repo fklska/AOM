@@ -7,7 +7,8 @@ from agent import execute, build_prompt, DATA
 from score import ScoringEngine
 import pandas as pd
 import json
-
+import warnings
+warnings.filterwarnings("ignore")
 
 load_dotenv()
 score = ScoringEngine()
@@ -34,6 +35,8 @@ OPTIMIZER_SYSTEM_PROMPT = """
 - Скомбинируй удачные идеи из топовых попыток, отбрось вредные или бесполезные.
 - Ты **не ограничен** исходным набором фраз. Можешь генерировать принципиально новые инструкции, усложнять или упрощать пайплайн, добавлять нестандартные эвристики предобработки — главное, чтобы это логически могло улучшить качество бинарной классификации на CatBoost.
 - Помни, что данные всегда табличные, реляционные, без временных рядов и аномальных структур.
+- Важно чтобы код был рабочим, лучше он будет простым, но рабочим
+- Если roc-auc у какого-либо промпта равен 0, это значит что агент на основе этого промпта написал нерабочий код
 
 **Жёсткие технические требования (должны быть соблюдены в `task` и/или `constraints`):**
 - Исходные таблицы лежат в папке `data/`, включая `train.csv`, `test.csv` и вспомогательные CSV-файлы.
@@ -76,7 +79,7 @@ optimizer = ChatOpenAI(
     model="moonshotai/kimi-k2.6",
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("API_KEY"),
-    reasoning_effort="medium",
+    reasoning_effort="minimal",
     extra_body={
         "reasoning": {"enabled": True},
         "provider": {
@@ -102,13 +105,16 @@ constraints = prompts.constraints.to_list()
 
 def main():
     history = list(map(lambda x: {"prompt": roles[x[0]] + "\n" + instructs[x[1]] + "\n" + constraints[x[2]] + "\n" + "Описание данных:\n" + DATA, "roc-auc": x[3]}, BASIC))
-    for i in range(5):
+    for i in range(2):
+        print("Вызов оптимизатора")
         answer = chain.invoke({
             "history": history
         })
         prompt = build_prompt(answer.role, answer.task, answer.constraints)
         auc = execute(prompt)
         print(auc)
+
+        history.append({"prompt": answer.role + "\n" + answer.task + "\n" + answer.constraints + "\n" + "Описание данных:\n" + DATA, "roc-auc": auc})
 
         log_entry = {
             "role": answer.role,
