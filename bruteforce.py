@@ -14,9 +14,9 @@ instructs = prompts.instruct.to_list()
 constraints = prompts.constraints.to_list()
 
 result = []
-for role_idx in tqdm.tqdm(range(3, 10)):
-    for task_idx in range(3, 10):
-        for constraint_idx in range(4, 10):
+for role_idx in tqdm.tqdm(range(8, 9)):
+    for task_idx in range(2, 3):
+        for constraint_idx in range(7, 8):
             prompt = build_prompt(roles[role_idx], instructs[task_idx], constraints[constraint_idx])
             auc = execute(prompt)
             print(auc)
