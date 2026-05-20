@@ -226,3 +226,6 @@ temporary.py
 data_titanic/
 DATA.csv
 logs_test.json
+logs_bf copy.json
+pics/
+
