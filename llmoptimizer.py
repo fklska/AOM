@@ -88,7 +88,7 @@ optimizer = ChatOpenAI(
             "allow_fallbacks": False
         },
     },
-    temperature=1
+
 )
 chain = PromptTemplate | optimizer.with_structured_output(PromptAnswer)
 
@@ -107,7 +107,7 @@ constraints = prompts.constraints.to_list()
 
 def main():
     history = list(map(lambda x: {"prompt": roles[x[0]] + "\n" + instructs[x[1]] + "\n" + constraints[x[2]] + "\n" + "Описание данных:\n" + DATA, "roc-auc": x[3]}, BASIC))
-    for i in range(7):
+    for i in range(10):
         print("Вызов оптимизатора")
         answer = chain.invoke({
             "history": history
@@ -124,7 +124,7 @@ def main():
             "constraint": answer.constraints,
             "roc_auc": auc
         }
-        with open("llm_optimizer3.json", "a", encoding="utf-8") as f:
+        with open("llm_optimizer4.json", "a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
 
